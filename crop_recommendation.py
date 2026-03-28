@@ -50,7 +50,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 clf = DecisionTreeClassifier(max_depth=10, random_state=42)
 clf.fit(X_train, y_train)
 acc = accuracy_score(y_test, clf.predict(X_test))
-print(f"✅ Model trained! Accuracy: {acc*100:.1f}%")
+print(f"Model trained! Accuracy: {acc*100:.1f}%")
 
 # ── Charts ─────────────────────────────────────────────────────────────────────
 fig, axes = plt.subplots(1, 2, figsize=(13, 5))
@@ -65,8 +65,9 @@ axes[1].set_title(f"Feature Importance (Accuracy: {acc*100:.1f}%)")
 axes[1].set_ylabel("Importance")
 axes[1].tick_params(axis="x", rotation=30)
 plt.tight_layout()
-plt.savefig("crop_analysis.png", dpi=150, bbox_inches="tight")
-plt.show()
+plt.savefig("crop_analysis.png")
+plt.close()
+print("Chart saved as crop_analysis.png")
 
 # ── Input validation ───────────────────────────────────────────────────────────
 def get_input(prompt, lo, hi):
@@ -76,9 +77,9 @@ def get_input(prompt, lo, hi):
             if lo <= val <= hi:
                 return val
             else:
-                print(f"  ❌ Invalid! Value must be between {lo} and {hi}. Try again.")
+                print(f"  Invalid! Value must be between {lo} and {hi}. Try again.")
         except ValueError:
-            print("  ❌ Please enter a valid number.")
+            print("  Please enter a valid number.")
 
 # ── Recommend ──────────────────────────────────────────────────────────────────
 print("\n" + "="*45)
@@ -86,13 +87,13 @@ print("   CROP RECOMMENDATION SYSTEM")
 print("="*45)
 print("  Enter your soil and climate details:\n")
 
-N           = get_input("Nitrogen (N)",       0,  200)
-P           = get_input("Phosphorous (P)",    0,  200)
-K           = get_input("Potassium (K)",      0,  300)
-temperature = get_input("Temperature °C",     0,   45)
-humidity    = get_input("Humidity %",         0,  100)
-ph          = get_input("Soil pH",            0,   14)
-rainfall    = get_input("Rainfall mm",        0,  400)
+N           = get_input("Nitrogen (N)",   0,  200)
+P           = get_input("Phosphorous (P)",0,  200)
+K           = get_input("Potassium (K)",  0,  300)
+temperature = get_input("Temperature C",  0,   45)
+humidity    = get_input("Humidity %",     0,  100)
+ph          = get_input("Soil pH",        0,   14)
+rainfall    = get_input("Rainfall mm",    0,  400)
 
 inp = pd.DataFrame([{"N":N,"P":P,"K":K,"temperature":temperature,
                       "humidity":humidity,"ph":ph,"rainfall":rainfall}])
@@ -105,6 +106,8 @@ print("="*45)
 for i, idx in enumerate(top3, 1):
     bar = "█" * int(proba[idx] * 30)
     print(f"  #{i} {clf.classes_[idx]:<15} {proba[idx]*100:5.1f}%  {bar}")
-print(f"\n  ✅ Best crop for your conditions: {clf.classes_[top3[0]]}")
+print(f"\n  Best crop for your conditions: {clf.classes_[top3[0]]}")
 print("="*45)
 print("\n  Note: Consult a local agronomist for field confirmation.")
+
+
