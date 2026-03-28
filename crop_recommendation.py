@@ -109,5 +109,3 @@ for i, idx in enumerate(top3, 1):
 print(f"\n  Best crop for your conditions: {clf.classes_[top3[0]]}")
 print("="*45)
 print("\n  Note: Consult a local agronomist for field confirmation.")
-
-
