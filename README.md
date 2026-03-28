@@ -46,5 +46,5 @@ A farmer enters 7 values about their soil and climate — the system recommends 
 | Input Validation | Rejects out-of-range values |
 
 ## Author
-Anwesha Dhote — B.Tech CSE AI ML
+Anwesha Dhote — B.Tech CSE AI ML 25BAI10996
 Course: Fundamentals of AI and ML, 2026
