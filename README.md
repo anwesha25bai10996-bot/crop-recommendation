@@ -6,10 +6,17 @@ A machine learning tool that recommends the best crop to grow based on soil and 
 A farmer enters 7 values about their soil and climate — the system recommends the top 3 best crops to grow with confidence percentages.
 
 ## How to Run
+
+**Option 1 — Command Line (Recommended)**
+1. Install dependencies: `pip install pandas numpy scikit-learn matplotlib`
+2. Run: `python crop_recommendation.py`
+3. Enter your soil details when prompted
+
+**Option 2 — Google Colab**
 1. Open [Google Colab](https://colab.research.google.com)
 2. Upload `crop_recommendation.py`
 3. Run the file
-4. Enter your soil details when prompted
+4. Note: Change input values directly in the code when using Colab
 
 ## Inputs
 | Input | Range |
