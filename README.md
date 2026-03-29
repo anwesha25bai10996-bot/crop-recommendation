@@ -44,6 +44,7 @@ A farmer enters 7 values about their soil and climate — the system recommends 
 | Supervised Learning | Trained on labeled soil/climate data |
 | Probability | Confidence scores using predict_proba() |
 | Input Validation | Rejects out-of-range values |
+| Explainibility |  After recommending a crop, the system explains WHY |
 
 ## Author
 Anwesha Dhote — B.Tech CSE AI ML 25BAI10996
