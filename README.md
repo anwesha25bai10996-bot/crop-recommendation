@@ -1,4 +1,6 @@
-# Crop Recommendation System 🌾
+# AgroAdvisor 🌾
+### Digital Crop Recommendation System
+
 
 A machine learning tool that recommends the best crop to grow based on soil and climate conditions.
 
