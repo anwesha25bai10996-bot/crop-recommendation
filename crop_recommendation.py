@@ -26,6 +26,68 @@ profiles = {
     "Blackgram":  ([30,60],[40,80],[30,70],[25,35],[60,80],[6.0,7.5],[60,100]),
 }
 
+# Optimal ranges for explanation (min, max per feature per crop)
+optimal_ranges = {
+    "Rice":       {"N":(80,120),"P":(40,60),"K":(35,55),"temperature":(20,28),"humidity":(80,90),"ph":(5.5,7.0),"rainfall":(150,300)},
+    "Maize":      {"N":(60,110),"P":(35,55),"K":(35,55),"temperature":(18,27),"humidity":(55,75),"ph":(5.5,7.5),"rainfall":(60,110)},
+    "Chickpea":   {"N":(20,50),"P":(45,95),"K":(65,95),"temperature":(15,24),"humidity":(15,30),"ph":(6.0,9.0),"rainfall":(60,100)},
+    "Cotton":     {"N":(100,140),"P":(35,55),"K":(15,25),"temperature":(23,28),"humidity":(75,85),"ph":(6.0,7.0),"rainfall":(80,120)},
+    "Jute":       {"N":(60,80),"P":(40,60),"K":(35,55),"temperature":(23,28),"humidity":(70,80),"ph":(6.0,7.0),"rainfall":(150,200)},
+    "Mango":      {"N":(15,25),"P":(10,20),"K":(25,45),"temperature":(25,38),"humidity":(45,55),"ph":(4.5,7.0),"rainfall":(90,110)},
+    "Banana":     {"N":(80,120),"P":(60,90),"K":(40,60),"temperature":(25,35),"humidity":(70,90),"ph":(5.5,7.0),"rainfall":(100,200)},
+    "Coffee":     {"N":(0,20),"P":(25,35),"K":(25,35),"temperature":(22,28),"humidity":(75,85),"ph":(6.0,7.0),"rainfall":(150,200)},
+    "Watermelon": {"N":(80,120),"P":(10,20),"K":(40,60),"temperature":(24,30),"humidity":(80,90),"ph":(6.0,7.0),"rainfall":(40,60)},
+    "Grapes":     {"N":(15,25),"P":(10,20),"K":(200,240),"temperature":(8,18),"humidity":(80,82),"ph":(5.5,6.5),"rainfall":(60,70)},
+    "Apple":      {"N":(0,20),"P":(120,145),"K":(195,210),"temperature":(20,24),"humidity":(90,95),"ph":(5.5,6.5),"rainfall":(100,125)},
+    "Orange":     {"N":(0,20),"P":(5,15),"K":(5,15),"temperature":(10,20),"humidity":(90,95),"ph":(6.0,7.5),"rainfall":(100,120)},
+    "Coconut":    {"N":(0,20),"P":(0,10),"K":(30,45),"temperature":(25,32),"humidity":(90,95),"ph":(5.0,8.0),"rainfall":(150,200)},
+    "Lentil":     {"N":(18,30),"P":(60,90),"K":(60,90),"temperature":(15,24),"humidity":(60,70),"ph":(6.0,8.0),"rainfall":(35,55)},
+    "Blackgram":  {"N":(30,60),"P":(40,80),"K":(30,70),"temperature":(25,35),"humidity":(60,80),"ph":(6.0,7.5),"rainfall":(60,100)},
+}
+
+feature_labels = {
+    "N": "Nitrogen", "P": "Phosphorous", "K": "Potassium",
+    "temperature": "Temperature", "humidity": "Humidity",
+    "ph": "Soil pH", "rainfall": "Rainfall"
+}
+
+feature_units = {
+    "N": "kg/ha", "P": "kg/ha", "K": "kg/ha",
+    "temperature": "C", "humidity": "%",
+    "ph": "", "rainfall": "mm"
+}
+
+# ── Explainability ─────────────────────────────────────────────────────────────
+def explain(crop, user_inputs):
+    if crop not in optimal_ranges:
+        return "  No explanation available for this crop."
+
+    ranges = optimal_ranges[crop]
+    matches = []
+    warnings_list = []
+
+    for feat, val in user_inputs.items():
+        lo, hi = ranges[feat]
+        label = feature_labels[feat]
+        unit = feature_units[feat]
+        unit_str = f" {unit}" if unit else ""
+
+        if lo <= val <= hi:
+            matches.append(f"{label} ({val}{unit_str})")
+        else:
+            if val < lo:
+                warnings_list.append(f"{label} ({val}{unit_str}) is below ideal (min: {lo}{unit_str})")
+            else:
+                warnings_list.append(f"{label} ({val}{unit_str}) is above ideal (max: {hi}{unit_str})")
+
+    explanation = ""
+    if matches:
+        explanation += f"  Matches: {', '.join(matches[:3])} are ideal for {crop}.\n"
+    if warnings_list:
+        explanation += f"  Watch out: {warnings_list[0]}."
+    return explanation
+
+# ── Train ──────────────────────────────────────────────────────────────────────
 np.random.seed(42)
 rows = []
 for crop, p in profiles.items():
@@ -42,8 +104,6 @@ for crop, p in profiles.items():
         })
 
 df = pd.DataFrame(rows).sample(frac=1, random_state=42).reset_index(drop=True)
-
-# ── Train ──────────────────────────────────────────────────────────────────────
 features = ["N","P","K","temperature","humidity","ph","rainfall"]
 X_train, X_test, y_train, y_test = train_test_split(
     df[features], df["label"], test_size=0.2, random_state=42)
@@ -82,29 +142,33 @@ def get_input(prompt, lo, hi):
             print("  Please enter a valid number.")
 
 # ── Recommend ──────────────────────────────────────────────────────────────────
-print("\n" + "="*45)
+print("\n" + "="*50)
 print("   CROP RECOMMENDATION SYSTEM")
-print("="*45)
+print("="*50)
 print("  Enter your soil and climate details:\n")
 
-N           = get_input("Nitrogen (N)",   0,  200)
-P           = get_input("Phosphorous (P)",0,  200)
-K           = get_input("Potassium (K)",  0,  300)
-temperature = get_input("Temperature C",  0,   45)
-humidity    = get_input("Humidity %",     0,  100)
-ph          = get_input("Soil pH",        0,   14)
-rainfall    = get_input("Rainfall mm",    0,  400)
+N           = get_input("Nitrogen (N)",    0,  200)
+P           = get_input("Phosphorous (P)", 0,  200)
+K           = get_input("Potassium (K)",   0,  300)
+temperature = get_input("Temperature C",   0,   45)
+humidity    = get_input("Humidity %",      0,  100)
+ph          = get_input("Soil pH",         0,   14)
+rainfall    = get_input("Rainfall mm",     0,  400)
 
-inp = pd.DataFrame([{"N":N,"P":P,"K":K,"temperature":temperature,
-                      "humidity":humidity,"ph":ph,"rainfall":rainfall}])
+user_inputs = {"N":N,"P":P,"K":K,"temperature":temperature,
+               "humidity":humidity,"ph":ph,"rainfall":rainfall}
+
+inp = pd.DataFrame([user_inputs])
 proba = clf.predict_proba(inp)[0]
 top3  = np.argsort(proba)[-3:][::-1]
 
-print("\n" + "="*45)
+print("\n" + "="*50)
 print("  RESULTS")
-print("="*45)
+print("="*50)
 for i, idx in enumerate(top3, 1):
+    crop_name = clf.classes_[idx]
     bar = "█" * int(proba[idx] * 30)
-    print(f"  #{i} {clf.classes_[idx]:<15} {proba[idx]*100:5.1f}%  {bar}")
-print(f"\n  Best crop for your conditions: {clf.classes_[top3[0]]}")
-print("="*45)
+    print(f"\n  #{i} {crop_name:<15} {proba[idx]*100:5.1f}%  {bar}")
+    print(explain(crop_name, user_inputs))
+
+print("="*50)
